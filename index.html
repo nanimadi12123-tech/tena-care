@@ -88,6 +88,12 @@
                     <span>907 Emergency</span>
                 </a>
 
+                <!-- API Key Config Button -->
+                <button onclick="toggleKeyModal()" class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 transition-all">
+                    <i class="fa-solid fa-key text-teal-600"></i>
+                    <span class="hidden md:inline">API Key</span>
+                </button>
+
                 <!-- Language Toggle -->
                 <div class="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200">
                     <button id="btnLangEn" onclick="setLanguage('en')" class="px-3 py-1 text-xs font-bold rounded-lg transition-all bg-white text-teal-700 shadow-sm">
@@ -121,6 +127,31 @@
 
     <!-- Main Content Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-6 overflow-hidden">
+
+        <!-- API Key Modal Overlay -->
+        <div id="keyModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-key text-teal-600"></i> Gemini API Key Configuration
+                    </h3>
+                    <button onclick="toggleKeyModal()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Provide a valid Google Gemini API key to enable live AI symptom triage. Get your key free from <a href="https://aistudio.google.com/" target="_blank" class="text-teal-600 underline font-semibold">Google AI Studio</a>.
+                </p>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Gemini API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="AIzaSy... or AQ..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button onclick="toggleKeyModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">Cancel</button>
+                    <button onclick="saveApiKey()" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm">Save Key</button>
+                </div>
+            </div>
+        </div>
 
         <!-- ================= TAB 1: AI DOCTOR CHAT ================= -->
         <div id="tabChat" class="h-[calc(100vh-12rem)] lg:h-[calc(100vh-11rem)] grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -406,92 +437,122 @@
         const STATE = {
             lang: 'en',
             theme: 'light',
-            apiKey: 'AQ.Ab8RN6JoJJ_DoE_zBuMKKlkkRzK5WwACPzFmxUsbHMYa6yUIBg',
+            apiKey: localStorage.getItem('gemini_api_key') || 'AQ.Ab8RN6Ka-iZcr4bntqm8zRqKnKsBJxm_VtXjZ63jm2bFMChHBg',
             isGenerating: false
         };
 
-        // Translations Dictionary
+        // Translations & System Prompts
         const translations = {
             en: {
-                appName: "HealthTriage AI",
-                disclaimer: "Disclaimer: Information provided is for preliminary triage only, not a formal diagnosis. In emergency situations, call 907 immediately.",
-                navChat: "Symptom Chat",
-                navVision: "Visual/Skin Assessment",
-                navHospitals: "Hospitals & Emergency",
-                btnTextCam: "Start Camera",
-                systemRolePrompt: `You are an expert medical triage assistant. Analyze the user's symptoms or wound image carefully.
-Respond strictly in English.
-Structure your response cleanly using markdown with these headings:
-1. 🩺 **Preliminary Risk Level**: [Mild / Moderate / Severe / Immediate Emergency]
-2. 🔍 **Potential Possibilities**: (List non-definitive causes to consider)
-3. 🏠 **Home Care & First Aid Advice**: (Practical steps)
-4. ⚠️ **When to Seek Immediate Medical Care**: (Red flags)
-Always include a compassionate closing note reminding the user that you are an AI assistant and not a substitute for a physical doctor.`,
-                aiThinking: "Analyzing symptoms..."
+                aiThinking: "TenaCare AI Doctor is analyzing your symptoms...",
+                systemRolePrompt: `You are TenaCare AI, an empathetic, highly skilled AI Medical Triage Assistant operating in Ethiopia.
+Your mission is to perform structured clinical triage for user-reported symptoms or wound image queries.
+
+Follow these strict clinical interaction guidelines:
+1. Identify immediate red flag symptoms (e.g., severe dyspnea, chest pain/pressure, stroke signs, heavy bleeding, loss of consciousness). If present, immediately urge dialing 907 or proceeding to the nearest emergency department.
+2. Outline 2-3 potential common differential possibilities (clearly stating these are NOT formal diagnoses).
+3. Provide practical, safe first-aid and home-care hygiene steps.
+4. Highlight warning signs that indicate symptoms are worsening.
+5. Emphasize that your assessment is preliminary and does not replace in-person medical evaluation.
+Keep responses well-structured using markdown headers, concise bullet points, and high readability.`
             },
             am: {
-                appName: "ጤና ትሪያጅ AI",
-                disclaimer: "ማሳሰቢያ፡ የቀረበው መረጃ ለመጀመሪያ ደረጃ ግምገማ ብቻ ነው፤ የህክምና ምርመራን አይተካም። በአስቸኳይ ጊዜ ወደ 907 ይደውሉ።",
-                navChat: "የምልክቶች ውይይት",
-                navVision: "የቁስል/ቆዳ ምርመራ",
-                navHospitals: "ሆስፒታሎች እና አስቸኳይ ጥሪ",
-                btnTextCam: "ካሜራ ጀምር",
-                systemRolePrompt: `እርስዎ የባለሙያ የሕክምና ትሪያጅ ረዳት ነዎት። የተጠቃሚውን ምልክቶች ወይም የቁስል ፎቶ በጥንቃቄ ይመርምሩ።
-በአማርኛ ቋንቋ ብቻ መልስ ይስጡ።
-መልስዎን የሚከተሉትን ንዑስ ርዕሶች በመጠቀም በግልጽ ያዋቅሩ፡
-1. 🩺 **የመጀመሪያ ደረጃ የስጋት ደረጃ**: [ቀሊል / መካከለኛ / ከፍተኛ / አስቸኳይ የህክምና እርዳታ]
-2. 🔍 **ሊሆኑ የሚችሉ ምክንያቶች**: (የተለያዩ አጋጣሚዎች)
-3. 🏠 **የቤት ውስጥ እንክብካቤ እና የመጀመሪያ ህክምና**: (ተግባራዊ ምክሮች)
-4. ⚠️ **ወደ ሕክምና መሄድ የሚያስፈልግበት ሁኔታ**: (አስቸኳይ ምልክቶች)
-ሁልጊዜ እርስዎ የ AI ረዳት እንደሆኑ እና የባለሙያ ሀኪም ማማከር እንደሚገባ የሚያስታውስ አጭር ማጠቃለያ ያክሉ።`,
-                aiThinking: "ምልክቶችን በመመርመር ላይ..."
+                aiThinking: "የቴናኬር AI ህክምና ረዳት ምልክቶችዎን በመመርመር ላይ ነው...",
+                systemRolePrompt: `እርስዎ የቴናኬር AI ህክምና ትሪያጅ ረዳት ነዎት። ዋና ተግባርዎ የተጠቃሚውን ምልክቶች ወይም የቁስል ፎቶ መርምረው ቅድመ-ህክምና መመሪያ መስጠት ነው።
+1. አስቸኳይ አደገኛ ምልክቶች ካሉ (ለምሳሌ፡ ከባድ የደረት ሕመም፣ የትንፋሽ እጥረት፣ ከፍተኛ ደም መፈሰስ) ተጠቃሚው ወዲያውኑ ወደ 907 እንዲደውል ወይም በአቅራቢያው ወደሚገኝ ሕክምና ቦታ እንዲሄድ ያሳስቡ።
+2. ሊሆኑ የሚችሉ ምክንያቶችን በአጭሩ ያብራሩ (ይህ መደበኛ ምርመራ አለመሆኑን ይግለጹ)።
+3. የመጀመሪያ እርዳታ እና የንጽህና መመሪያዎችን ይስጡ።
+4. ምላሽዎን በአማርኛ ግልጽ እና በተደራጀ መልኩ ያቅርቡ።`
             }
         };
 
-        // Complete Directory of Major Ethiopia Hospitals
+        // Nearby Ethiopian Hospitals Data
         const hospitalsData = [
-            { id: 1, name: "Tikur Anbessa (Black Lion) Specialized Hospital", city: "Addis Ababa (Lideta)", type: "Public", phone: "0115511211", maps: "Tikur+Anbessa+Hospital+Addis+Ababa", emergency24: true },
-            { id: 2, name: "St. Paul's Hospital Millennium Medical College", city: "Addis Ababa (Gullele)", type: "Public", phone: "0112750125", maps: "St.+Paul's+Hospital+Addis+Ababa", emergency24: true },
-            { id: 3, name: "Saint Gabriel General Hospital", city: "Addis Ababa (22 Mazoria)", type: "Private", phone: "0116613175", maps: "Saint+Gabriel+Hospital+Addis+Ababa", emergency24: true },
-            { id: 4, name: "Korean Hospital (MCM Hospital)", city: "Addis Ababa (Gerji)", type: "Private", phone: "0116292963", maps: "MCM+Korean+Hospital+Addis+Ababa", emergency24: true },
-            { id: 5, name: "Landmark General Hospital", city: "Addis Ababa (Bole)", type: "Private", phone: "0115525528", maps: "Landmark+Hospital+Addis+Ababa", emergency24: true },
-            { id: 6, name: "Yekatit 12 Hospital Medical College", city: "Addis Ababa (Sidist Kilo)", type: "Public", phone: "0111234321", maps: "Yekatit+12+Hospital+Addis+Ababa", emergency24: true }
+            { name: "Tikur Anbessa (Black Lion) Hospital", city: "Addis Ababa (Lideta)", phone: "+251 11 551 1211", type: "Public", emergency24: true, maps: "Tikur+Anbessa+Specialized+Hospital" },
+            { name: "St. Paul's Hospital Millennium Medical College", city: "Addis Ababa (Gullele)", phone: "+251 11 275 0125", type: "Public", emergency24: true, maps: "St.+Paul's+Hospital+Addis+Ababa" },
+            { name: "St. Peter's Specialized Hospital", city: "Addis Ababa (Shiro Meda)", phone: "+251 11 122 5183", type: "Public", emergency24: true, maps: "St.+Peter's+Specialized+Hospital" },
+            { name: "Yekatit 12 Hospital Medical College", city: "Addis Ababa (Arat Kilo)", phone: "+251 11 123 4272", type: "Public", emergency24: true, maps: "Yekatit+12+Hospital" },
+            { name: "Landmark General Hospital", city: "Addis Ababa (Mexico Area)", phone: "+251 11 552 5340", type: "Private", emergency24: true, maps: "Landmark+Hospital+Addis+Ababa" },
+            { name: "Nordic Medical Centre", city: "Addis Ababa (Bole Atlas)", phone: "+251 92 910 2233", type: "Private", emergency24: true, maps: "Nordic+Medical+Centre+Addis+Ababa" },
+            { name: "Kadisco General Hospital", city: "Addis Ababa (Gerji)", phone: "+251 11 629 8900", type: "Private", emergency24: true, maps: "Kadisco+General+Hospital" },
+            { name: "Korean Hospital (MCM)", city: "Addis Ababa (Gerji)", phone: "+251 11 629 2963", type: "Private", emergency24: true, maps: "MCM+Korean+Hospital" }
         ];
 
-        // Canvas & Vision Scanner Functions
+        // Canvas Initialization
         function initCanvas() {
             const canvas = document.getElementById('scannerCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             canvas.width = 640;
             canvas.height = 360;
-            ctx.fillStyle = "#0f172a";
+
+            // Render subtle grid background on initial canvas
+            ctx.fillStyle = '#0f172a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
         }
 
+        // Camera Toggle Control
         async function toggleCamera() {
             const video = document.getElementById('webcamVideo');
             const placeholder = document.getElementById('cameraPlaceholder');
-            const btnCam = document.getElementById('btnTextCam');
+            const btnCamText = document.getElementById('btnTextCam');
 
             if (activeStream) {
                 activeStream.getTracks().forEach(track => track.stop());
                 activeStream = null;
                 video.classList.add('hidden');
-                if (placeholder) placeholder.classList.remove('hidden');
-                if (btnCam) btnCam.textContent = "Start Camera";
-                return;
+                placeholder.classList.remove('hidden');
+                btnCamText.textContent = currentLang === 'am' ? "ካሜራ ጀምር" : "Start Camera";
+                document.getElementById('btnScanAnalyze').disabled = true;
+            } else {
+                try {
+                    activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    video.srcObject = activeStream;
+                    video.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                    btnCamText.textContent = currentLang === 'am' ? "ካሜራ አቁም" : "Stop Camera";
+                    document.getElementById('btnScanAnalyze').disabled = false;
+                } catch (err) {
+                    console.error("Camera access error:", err);
+                    alert("Unable to access camera. Please check camera permissions or upload an image instead.");
+                }
             }
+        }
 
-            try {
-                activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = activeStream;
-                video.classList.remove('hidden');
-                if (placeholder) placeholder.classList.add('hidden');
-                if (btnCam) btnCam.textContent = "Stop Camera";
-                document.getElementById('btnScanAnalyze').disabled = false;
-            } catch (err) {
-                alert("Could not access camera. Please check permissions or upload an image.");
+        function toggleKeyModal() {
+            const modal = document.getElementById('keyModal');
+            const input = document.getElementById('apiKeyInput');
+            if (!modal) return;
+            if (modal.classList.contains('hidden')) {
+                input.value = STATE.apiKey;
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function saveApiKey() {
+            const input = document.getElementById('apiKeyInput');
+            if (input && input.value.trim()) {
+                STATE.apiKey = input.value.trim();
+                localStorage.setItem('gemini_api_key', STATE.apiKey);
+                toggleKeyModal();
+                appendMessage('assistant', currentLang === 'am' ? "🔑 ኤፒአይ ቁልፍ በተሳካ ሁኔታ ተዘምኗል። አሁን ውይይት መቀጠል ይችላሉ።" : "🔑 API key updated successfully. You can now resume symptom triage.");
             }
         }
 
@@ -807,16 +868,28 @@ Always include a compassionate closing note reminding the user that you are an A
                 chatHistory.push({ role: 'user', parts: parts });
 
                 const apiKey = STATE.apiKey;
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${encodeURIComponent(apiKey)}`;
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': apiKey
+                    },
                     body: JSON.stringify({
                         contents: chatHistory,
                         systemInstruction: { parts: [{ text: translations[currentLang].systemRolePrompt }] }
                     })
                 });
+
+                if (response.status === 401) {
+                    removeTypingIndicator();
+                    appendMessage('assistant', currentLang === 'am'
+                        ? "⚠️ <strong>የኤፒአይ ቁልፍ ስህተት (401)</strong>፡ የገባው Google Gemini API key ጊዜው አልፎበታል ወይም ውድቅ ሆኗል። እባክዎን ከላይ <strong>API Key</strong> የሚለውን በመጫን አዲስ ቁልፍ ያስገቡ።"
+                        : "⚠️ <strong>Invalid API Key (HTTP 401)</strong>: The provided Gemini API Key was rejected or expired. Please click the <strong>API Key</strong> button in the top bar to update your Google AI Studio key.");
+                    toggleKeyModal();
+                    return;
+                }
 
                 if (!response.ok) throw new Error(`API response status ${response.status}`);
 
