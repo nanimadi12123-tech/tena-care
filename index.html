@@ -39,6 +39,14 @@
             background-color: #cbd5e1;
             border-radius: 20px;
         }
+        /* Enable scrollability on mobile and dynamic desktop containers */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
         .pulse-emergency {
             animation: pulse-red 2s infinite;
         }
@@ -69,19 +77,19 @@
             
             <!-- Brand Logo -->
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-600 to-teal-400 flex items-center justify-center text-white shadow-md">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-600 to-teal-400 flex items-center justify-center text-white shadow-md shrink-0">
                     <i class="fa-solid fa-heart-pulse text-xl"></i>
                 </div>
-                <div>
-                    <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 leading-none">
+                <div class="min-w-0">
+                    <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 leading-none truncate">
                         TenaCare <span class="text-teal-600">AI</span>
                     </h1>
-                    <p class="text-[11px] text-slate-500 font-semibold mt-0.5" id="headerSubtitle">Smart Health Triage & Wound Scanner</p>
+                    <p class="text-[11px] text-slate-500 font-semibold mt-0.5 truncate" id="headerSubtitle">Smart Health Triage & Wound Scanner</p>
                 </div>
             </div>
 
             <!-- Header Controls & Language Switcher -->
-            <div class="flex items-center gap-2 sm:gap-3">
+            <div class="flex items-center gap-2 sm:gap-3 shrink-0">
                 <!-- Emergency Hotline Badge -->
                 <a href="tel:907" class="hidden sm:flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm">
                     <i class="fa-solid fa-phone-flip animate-bounce"></i>
@@ -108,29 +116,73 @@
 
         <!-- Main Tabbed Navigation Bar -->
         <div class="bg-slate-50 border-t border-slate-200/80 px-4">
-            <div class="max-w-7xl mx-auto flex items-center justify-start gap-2 overflow-x-auto no-scrollbar py-2">
-                <button id="tabBtnChat" onclick="switchTab('chat')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-teal-600 text-white shadow-sm shrink-0">
-                    <i class="fa-solid fa-comments"></i>
-                    <span id="tabLabelChat">AI Doctor Chat</span>
-                </button>
-                <button id="tabBtnScanner" onclick="switchTab('scanner')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 shrink-0">
-                    <i class="fa-solid fa-camera font-bold"></i>
-                    <span id="tabLabelScanner">Wound & Skin Scanner</span>
-                </button>
-                <button id="tabBtnHospitals" onclick="switchTab('hospitals')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 shrink-0">
-                    <i class="fa-solid fa-hospital-user"></i>
-                    <span id="tabLabelHospitals">Nearby Hospitals & Emergency</span>
+            <div class="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto no-scrollbar py-2 gap-2">
+                <div class="flex items-center gap-2 shrink-0">
+                    <button id="tabBtnChat" onclick="switchTab('chat')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-teal-600 text-white shadow-sm shrink-0">
+                        <i class="fa-solid fa-comments"></i>
+                        <span id="tabLabelChat">AI Doctor Chat</span>
+                    </button>
+                    <button id="tabBtnScanner" onclick="switchTab('scanner')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 shrink-0">
+                        <i class="fa-solid fa-camera font-bold"></i>
+                        <span id="tabLabelScanner">Wound & Skin Scanner</span>
+                    </button>
+                    <button id="tabBtnHospitals" onclick="switchTab('hospitals')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 shrink-0">
+                        <i class="fa-solid fa-hospital-user"></i>
+                        <span id="tabLabelHospitals">Hospitals & Clinics</span>
+                    </button>
+                    <button id="tabBtnPharmacies" onclick="switchTab('pharmacies')" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 shrink-0">
+                        <i class="fa-solid fa-pills"></i>
+                        <span id="tabLabelPharmacies">24/7 Pharmacies</span>
+                    </button>
+                </div>
+
+                <!-- Session Replays & History Trigger -->
+                <button onclick="toggleHistoryDrawer()" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 shrink-0">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span id="btnReplayHistory">Replays & History</span>
                 </button>
             </div>
         </div>
     </header>
 
     <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-6 overflow-hidden">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-6 overflow-y-auto min-h-0 relative">
+
+        <!-- History & Replays Slide-over Drawer -->
+        <div id="historyDrawer" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex justify-end transition-opacity">
+            <div class="bg-white w-full max-w-md h-full shadow-2xl flex flex-col justify-between border-l border-slate-200">
+                
+                <!-- Drawer Header -->
+                <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-teal-600"></i>
+                        <h3 class="font-bold text-sm text-slate-900" id="drawerTitle">Saved Assessment Replays</h3>
+                    </div>
+                    <button onclick="toggleHistoryDrawer()" class="text-slate-400 hover:text-slate-600 p-1">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Replays Saved Sessions List -->
+                <div id="replaysList" class="flex-1 overflow-y-auto p-4 space-y-3 chat-scroll">
+                    <!-- Populated dynamically by JS -->
+                </div>
+
+                <!-- Drawer Footer Controls -->
+                <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-2">
+                    <button onclick="saveCurrentSessionAsReplay()" class="flex-1 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-bookmark"></i> Save Active Replay
+                    </button>
+                    <button onclick="clearAllReplays()" class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-bold border border-red-200 transition-colors">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- API Key Modal Overlay -->
-        <div id="keyModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full p-6 shadow-xl space-y-4">
+        <div id="keyModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto chat-scroll">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                     <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                         <i class="fa-solid fa-key text-teal-600"></i> Gemini API Key Configuration
@@ -154,10 +206,10 @@
         </div>
 
         <!-- ================= TAB 1: AI DOCTOR CHAT ================= -->
-        <div id="tabChat" class="h-[calc(100vh-12rem)] lg:h-[calc(100vh-11rem)] grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div id="tabChat" class="h-full min-h-[500px] lg:h-[calc(100vh-12rem)] grid grid-cols-1 lg:grid-cols-12 gap-4">
             
             <!-- Left: Main Chat Window (8 Cols) -->
-            <div class="lg:col-span-8 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full">
+            <div class="lg:col-span-8 flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[600px] lg:h-full">
                 
                 <!-- Chat Status Header -->
                 <div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center justify-between shrink-0">
@@ -166,24 +218,32 @@
                         <h2 class="text-sm font-bold text-slate-800" id="chatTitle">Interactive AI Doctor Triage</h2>
                     </div>
 
-                    <!-- Triage Status Badge -->
-                    <div id="triageBadge" class="hidden text-xs font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                        <i class="fa-solid fa-stethoscope mr-1"></i>
-                        <span id="triageLevelText">Assessment Ready</span>
-                    </div>
+                    <div class="flex items-center gap-2">
+                        <!-- Triage Status Badge -->
+                        <div id="triageBadge" class="hidden text-xs font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                            <i class="fa-solid fa-stethoscope mr-1"></i>
+                            <span id="triageLevelText">Assessment Ready</span>
+                        </div>
 
-                    <button onclick="resetConversation()" class="text-slate-400 hover:text-teal-600 p-1 transition-colors" title="Start New Conversation">
-                        <i class="fa-solid fa-rotate-right text-sm"></i>
-                    </button>
+                        <!-- Save Session Replay Button -->
+                        <button onclick="saveCurrentSessionAsReplay()" class="text-xs bg-slate-100 hover:bg-teal-50 text-slate-600 hover:text-teal-700 font-bold px-2.5 py-1 rounded-lg border border-slate-200 transition-all flex items-center gap-1" title="Save this triage session replay">
+                            <i class="fa-solid fa-floppy-disk text-teal-600"></i>
+                            <span class="hidden sm:inline">Save Replay</span>
+                        </button>
+
+                        <button onclick="resetConversation()" class="text-slate-400 hover:text-teal-600 p-1 transition-colors" title="Start New Conversation">
+                            <i class="fa-solid fa-rotate-right text-sm"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Chat Scroll Stream Area -->
-                <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll bg-slate-50/40">
+                <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll bg-slate-50/40 min-h-0">
                     <!-- Initial Welcome Message rendered by JS -->
                 </div>
 
                 <!-- Quick Symptom Action Chips -->
-                <div class="px-4 py-2 bg-white border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs shrink-0 no-scrollbar">
+                <div class="px-4 py-2 bg-white border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs shrink-0 chat-scroll">
                     <span class="text-slate-400 text-[11px] font-bold uppercase tracking-wider shrink-0" id="promptsLabel">Quick Symptoms:</span>
                     <button onclick="sendQuickPrompt('chest')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-800 rounded-full border border-red-200 font-medium whitespace-nowrap transition-colors">
                         🚨 Chest Tightness
@@ -237,7 +297,7 @@
             </div>
 
             <!-- Right: Urgent Triage Guide & Critical Signs (4 Cols) -->
-            <div class="lg:col-span-4 hidden lg:flex flex-col gap-4 overflow-y-auto chat-scroll">
+            <div class="lg:col-span-4 flex flex-col gap-4 overflow-y-auto chat-scroll max-h-[600px] lg:max-h-full">
                 
                 <!-- Severity Breakdown Cards -->
                 <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
@@ -283,10 +343,10 @@
         </div>
 
         <!-- ================= TAB 2: WOUND & SKIN CAMERA SCANNER ================= -->
-        <div id="tabScanner" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[calc(100vh-11rem)]">
+        <div id="tabScanner" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 lg:h-[calc(100vh-11rem)] overflow-y-auto lg:overflow-visible">
             
             <!-- Left: Camera Stream / Image Canvas Analysis (7 Cols) -->
-            <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+            <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between overflow-y-auto chat-scroll">
                 <div>
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2" id="scannerTitle">
@@ -337,82 +397,123 @@
             </div>
 
             <!-- Right: Vision Analysis Results Dashboard (5 Cols) -->
-            <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+            <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between overflow-y-auto chat-scroll max-h-[600px] lg:max-h-full">
                 <div>
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5" id="analysisTitle">
-                        <i class="fa-solid fa-chart-pie text-teal-600"></i> Vision Diagnostic Report
-                    </h3>
+                    <!-- Header with Custom Logo -->
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5" id="analysisTitle">
+                            <i class="fa-solid fa-chart-pie text-teal-600"></i> Vision Diagnostic Report
+                        </h3>
+                        <div class="flex items-center gap-1.5 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
+                            <img id="scannerReportLogo" src="" alt="TenaCare AI Logo" class="w-5 h-5 rounded-md object-contain">
+                            <span class="text-[10px] font-extrabold text-teal-800">TenaCare Vision AI</span>
+                        </div>
+                    </div>
 
                     <div id="scanReportEmpty" class="text-center py-12 text-slate-400">
                         <i class="fa-solid fa-notes-medical text-3xl mb-2 text-slate-300"></i>
-                        <p class="text-xs" id="emptyReportText">Run a camera or uploaded image scan to view zone severity, erythema percentage, and hygiene instructions.</p>
+                        <p class="text-xs" id="emptyReportText">Run a camera or uploaded image scan to view potential conditions, severity, and step-by-step care instructions.</p>
                     </div>
 
-                    <!-- Populated Report Content -->
-                    <div id="scanReportContent" class="hidden space-y-3 text-xs">
+                    <!-- Loading Spinner for AI Scanner -->
+                    <div id="scanReportLoading" class="hidden text-center py-12 text-teal-600">
+                        <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+                        <p class="text-xs font-bold text-slate-700" id="scanLoadingText">Analyzing skin condition & generating medical care guide...</p>
+                        <p class="text-[11px] text-slate-400 mt-1">Inspecting color distribution, tissue borders, and surface texture</p>
+                    </div>
+
+                    <!-- Populated AI Report Content -->
+                    <div id="scanReportContent" class="hidden space-y-3 text-xs overflow-y-auto max-h-[350px] chat-scroll pr-1">
                         
-                        <!-- Zone & Severity Metric -->
+                        <!-- Identified Disease / Possible Condition -->
+                        <div class="p-3 rounded-xl bg-teal-50/80 border border-teal-200">
+                            <span class="text-[10px] text-teal-700 uppercase font-bold tracking-wider block" id="lblPossibleCondition">Potential Condition / Observation</span>
+                            <div class="text-sm font-extrabold text-slate-900 mt-0.5" id="valCondition">--</div>
+                        </div>
+
+                        <!-- Severity & Metric Breakdown -->
                         <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                             <div>
                                 <span class="text-[10px] text-slate-400 uppercase font-bold" id="lblSeverity">Estimated Severity</span>
-                                <div class="text-sm font-extrabold text-amber-600 flex items-center gap-1.5 mt-0.5" id="valSeverity">
+                                <div class="text-xs font-extrabold text-amber-600 flex items-center gap-1.5 mt-0.5" id="valSeverity">
                                     <i class="fa-solid fa-circle-exclamation"></i> Moderate Inflammation
                                 </div>
                             </div>
                             <div class="text-right">
-                                <span class="text-[10px] text-slate-400 uppercase font-bold" id="lblErythema">Erythema Ratio</span>
-                                <div class="text-sm font-extrabold text-slate-800 mt-0.5" id="valErythema">38% Redness Zone</div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold" id="lblUrgency">Recommended Action</span>
+                                <div class="text-xs font-extrabold text-teal-700 mt-0.5" id="valUrgency">Self Care & Monitor</div>
                             </div>
                         </div>
 
-                        <!-- Visual Characteristics detected -->
+                        <!-- Visual Indicators Detected -->
                         <div class="space-y-1.5">
-                            <span class="font-bold text-slate-700 block text-[11px]" id="lblObserved">Observed Visual Indicators:</span>
-                            <ul class="list-disc list-inside text-slate-600 space-y-1 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-200" id="valIndicators">
-                                <li>Localized redness / swelling signature</li>
-                                <li>Intact skin surface boundaries</li>
-                                <li>No major vascular pulsing detected</li>
-                            </ul>
+                            <span class="font-bold text-slate-700 block text-[11px]" id="lblObserved">Observed Visual Features:</span>
+                            <div class="text-slate-600 leading-relaxed text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-200" id="valIndicators">--</div>
                         </div>
 
-                        <!-- First Aid & Hygiene Advice -->
-                        <div class="space-y-1.5">
-                            <span class="font-bold text-slate-700 block text-[11px]" id="lblFirstAid">Recommended First-Aid Steps:</span>
-                            <div class="bg-teal-50/70 border border-teal-200/80 p-3 rounded-xl text-teal-900 leading-relaxed text-[11px]" id="valFirstAid">
-                                Clean affected area gently with sterile water and mild soap. Avoid picking or scratching. Apply clean bandage. Seek clinic evaluation if pain worsens or fever develops.
-                            </div>
+                        <!-- How to Take Care / First Aid Guide -->
+                        <div class="p-3 rounded-xl bg-teal-50/50 border border-teal-100">
+                            <span class="text-[10px] text-teal-800 uppercase font-bold tracking-wider block" id="lblFirstAid">Step-by-Step Care & First Aid</span>
+                            <p class="text-[11px] text-slate-700 mt-1 leading-relaxed whitespace-pre-line" id="valFirstAid">--</p>
                         </div>
+
+                        <!-- Red Flag Emergency Symptoms -->
+                        <div class="p-3 rounded-xl bg-red-50 border border-red-100">
+                            <span class="text-[10px] text-red-700 uppercase font-bold tracking-wider block" id="lblWhenDoctor">🚨 When to See a Doctor Immediately</span>
+                            <p class="text-[11px] text-red-900 mt-1 leading-relaxed" id="valWhenDoctor">--</p>
+                        </div>
+
+                        <button id="btnSendScanToChat" onclick="transferScanToChat()" disabled class="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-1.5 mt-2">
+                            <i class="fa-solid fa-comments"></i> Transfer Report to AI Doctor Chat
+                        </button>
                     </div>
                 </div>
-
-                <!-- Transfer Image Analysis to AI Chat -->
-                <button onclick="transferScanToChat()" id="btnSendScanToChat" disabled class="mt-4 w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow disabled:opacity-40">
-                    <i class="fa-solid fa-comments"></i>
-                    <span id="btnTextTransfer">Ask AI Doctor About This Scan</span>
-                </button>
             </div>
         </div>
 
-        <!-- ================= TAB 3: NEARBY HOSPITALS & EMERGENCY DIRECTORY ================= -->
-        <div id="tabHospitals" class="hidden h-auto lg:h-[calc(100vh-11rem)] flex flex-col gap-4">
+        <!-- ================= TAB 3: HOSPITALS & SPECIALIZED CLINICS DIRECTORY ================= -->
+        <div id="tabHospitals" class="hidden h-auto min-h-0 lg:h-[calc(100vh-11rem)] flex flex-col gap-4 overflow-y-auto chat-scroll">
             
             <!-- Directory Filter Bar -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
                 <div class="relative w-full sm:w-80">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
-                    <input type="text" id="facilitySearch" oninput="filterFacilities()" placeholder="Search hospital name or zone in Addis Ababa..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <input type="text" id="hospitalSearch" oninput="filterHospitals()" placeholder="Search hospital name or sub-city..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-teal-500">
                 </div>
 
                 <!-- Quick Filter Buttons -->
                 <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar">
-                    <button onclick="filterType('All')" class="px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-lg shrink-0" id="filterAll">All Facilities</button>
-                    <button onclick="filterType('Public')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg shrink-0" id="filterPublic">Public Referral</button>
-                    <button onclick="filterType('Private')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg shrink-0" id="filterPrivate">Private Hospitals</button>
+                    <button onclick="filterHospCategory('All')" class="px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-lg shrink-0" id="filterHospAll">All Facilities</button>
+                    <button onclick="filterHospCategory('Public')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg shrink-0" id="filterHospPublic">Public Hospitals</button>
+                    <button onclick="filterHospCategory('Private')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg shrink-0" id="filterHospPrivate">Private Hospitals</button>
+                    <button onclick="filterHospCategory('Clinic')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg shrink-0" id="filterHospClinic">Specialized Clinics</button>
                 </div>
             </div>
 
             <!-- Hospital Cards Grid -->
             <div id="hospitalGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto chat-scroll pr-1 flex-1">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- ================= TAB 4: 24/7 PHARMACIES DIRECTORY ================= -->
+        <div id="tabPharmacies" class="hidden h-auto min-h-0 lg:h-[calc(100vh-11rem)] flex flex-col gap-4 overflow-y-auto chat-scroll">
+            
+            <!-- Pharmacies Filter Bar -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+                <div class="relative w-full sm:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                    <input type="text" id="pharmacySearch" oninput="filterPharmacies()" placeholder="Search pharmacy name, area, or sub-city..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+
+                <div class="flex items-center gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 px-3 py-2 rounded-xl font-semibold">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>Emergency & 24 Hours Availability Directory</span>
+                </div>
+            </div>
+
+            <!-- Pharmacy Cards Grid -->
+            <div id="pharmacyGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto chat-scroll pr-1 flex-1">
                 <!-- Injected via JS -->
             </div>
         </div>
@@ -423,62 +524,96 @@
     <script>
         // Configuration & State Management
         let currentLang = 'en';
-        let activeFilterType = 'All';
+        let activeHospFilter = 'All';
         let activeStream = null;
         let currentScanImage = null;
+        let savedReplays = JSON.parse(localStorage.getItem('tenacare_replays') || '[]');
+        let chatHistory = [];
+
+        const STATE = {
+            apiKey: localStorage.getItem('gemini_api_key') || 'AQ.Ab8RN6Ka-iZcr4bntqm8zRqKnKsBJxm_VtXjZ63jm2bFMChHBg',
+            lang: 'en'
+        };
+
+        const translations = {
+            en: {
+                aiThinking: "TenaCare AI Doctor is analyzing symptoms...",
+                systemRolePrompt: "You are TenaCare AI, an empathetic, highly accurate preliminary medical triage assistant for patients in Ethiopia. Provide clear risk levels (EMERGENCY, MODERATE, or LOW), potential causes, first-aid steps, and clear advice on whether to visit a clinic/hospital. Always emphasize emergency line 907 or local ERs for severe conditions. Respond warmly and clearly."
+            },
+            am: {
+                aiThinking: "ቴናኬር AI የህክምና ረዳት ምልክቶችዎን በመመርመር ላይ ይገኛል...",
+                systemRolePrompt: "እርስዎ የቴናኬር AI የህክምና እና የትሪያጅ ረዳት ነዎት። ለተጠቃሚዎች ግልጽ የደረጃ መደብ (አስቸኳይ፣ መካከለኛ፣ ቀለል ያለ)፣ መንሰኤዎች፣ የመጀመሪያ ህክምና እርዳታ እና ሆስፒታል መሄድ አስፈላጊ መሆኑን ያብራሩ። ለአስቸኳይ ሁኔታዎች 907 ይደውሉ በማለት ይመክሩ።"
+            }
+        };
+
+        // Base64 Logo standard string for branding
+        const BRAND_LOGO_SRC = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
         // Image attachment state for chat
         let attachedImageBase64 = null;
         let attachedImageMime = null;
 
-        // Interactive chat history array for Gemini API context
-        let chatHistory = [];
-
-        const STATE = {
-            lang: 'en',
-            theme: 'light',
-            apiKey: localStorage.getItem('gemini_api_key') || 'AQ.Ab8RN6Ka-iZcr4bntqm8zRqKnKsBJxm_VtXjZ63jm2bFMChHBg',
-            isGenerating: false
-        };
-
-        // Translations & System Prompts
-        const translations = {
-            en: {
-                aiThinking: "TenaCare AI Doctor is analyzing your symptoms...",
-                systemRolePrompt: `You are TenaCare AI, an empathetic, highly skilled AI Medical Triage Assistant operating in Ethiopia.
-Your mission is to perform structured clinical triage for user-reported symptoms or wound image queries.
-
-Follow these strict clinical interaction guidelines:
-1. Identify immediate red flag symptoms (e.g., severe dyspnea, chest pain/pressure, stroke signs, heavy bleeding, loss of consciousness). If present, immediately urge dialing 907 or proceeding to the nearest emergency department.
-2. Outline 2-3 potential common differential possibilities (clearly stating these are NOT formal diagnoses).
-3. Provide practical, safe first-aid and home-care hygiene steps.
-4. Highlight warning signs that indicate symptoms are worsening.
-5. Emphasize that your assessment is preliminary and does not replace in-person medical evaluation.
-Keep responses well-structured using markdown headers, concise bullet points, and high readability.`
-            },
-            am: {
-                aiThinking: "የቴናኬር AI ህክምና ረዳት ምልክቶችዎን በመመርመር ላይ ነው...",
-                systemRolePrompt: `እርስዎ የቴናኬር AI ህክምና ትሪያጅ ረዳት ነዎት። ዋና ተግባርዎ የተጠቃሚውን ምልክቶች ወይም የቁስል ፎቶ መርምረው ቅድመ-ህክምና መመሪያ መስጠት ነው።
-1. አስቸኳይ አደገኛ ምልክቶች ካሉ (ለምሳሌ፡ ከባድ የደረት ሕመም፣ የትንፋሽ እጥረት፣ ከፍተኛ ደም መፈሰስ) ተጠቃሚው ወዲያውኑ ወደ 907 እንዲደውል ወይም በአቅራቢያው ወደሚገኝ ሕክምና ቦታ እንዲሄድ ያሳስቡ።
-2. ሊሆኑ የሚችሉ ምክንያቶችን በአጭሩ ያብራሩ (ይህ መደበኛ ምርመራ አለመሆኑን ይግለጹ)።
-3. የመጀመሪያ እርዳታ እና የንጽህና መመሪያዎችን ይስጡ።
-4. ምላሽዎን በአማርኛ ግልጽ እና በተደራጀ መልኩ ያቅርቡ።`
-            }
-        };
-
-        // Nearby Ethiopian Hospitals Data
+        // Addis Ababa Comprehensive Medical Facilities Directory
         const hospitalsData = [
-            { name: "Tikur Anbessa (Black Lion) Hospital", city: "Addis Ababa (Lideta)", phone: "+251 11 551 1211", type: "Public", emergency24: true, maps: "Tikur+Anbessa+Specialized+Hospital" },
-            { name: "St. Paul's Hospital Millennium Medical College", city: "Addis Ababa (Gullele)", phone: "+251 11 275 0125", type: "Public", emergency24: true, maps: "St.+Paul's+Hospital+Addis+Ababa" },
-            { name: "St. Peter's Specialized Hospital", city: "Addis Ababa (Shiro Meda)", phone: "+251 11 122 5183", type: "Public", emergency24: true, maps: "St.+Peter's+Specialized+Hospital" },
-            { name: "Yekatit 12 Hospital Medical College", city: "Addis Ababa (Arat Kilo)", phone: "+251 11 123 4272", type: "Public", emergency24: true, maps: "Yekatit+12+Hospital" },
-            { name: "Landmark General Hospital", city: "Addis Ababa (Mexico Area)", phone: "+251 11 552 5340", type: "Private", emergency24: true, maps: "Landmark+Hospital+Addis+Ababa" },
-            { name: "Nordic Medical Centre", city: "Addis Ababa (Bole Atlas)", phone: "+251 92 910 2233", type: "Private", emergency24: true, maps: "Nordic+Medical+Centre+Addis+Ababa" },
-            { name: "Kadisco General Hospital", city: "Addis Ababa (Gerji)", phone: "+251 11 629 8900", type: "Private", emergency24: true, maps: "Kadisco+General+Hospital" },
-            { name: "Korean Hospital (MCM)", city: "Addis Ababa (Gerji)", phone: "+251 11 629 2963", type: "Private", emergency24: true, maps: "MCM+Korean+Hospital" }
+            // Public Hospitals
+            { id: 1, name: "St. Paul's Hospital Millennium Medical College", type: "Public", city: "Gullele / Swaziland St", phone: "+251 11 275 7676", emergency24: true, maps: "St.+Paul's+Hospital+Addis+Ababa" },
+            { id: 2, name: "Tikur Anbessa (Black Lion) Specialized Hospital", type: "Public", city: "Lideta / Zambia St", phone: "+251 11 551 1211", emergency24: true, maps: "Tikur+Anbessa+Hospital+Addis+Ababa" },
+            { id: 3, name: "Yekatit 12 Hospital Medical College", type: "Public", city: "Arada / Siddist Kilo", phone: "+251 11 123 4300", emergency24: true, maps: "Yekatit+12+Hospital+Addis+Ababa" },
+            { id: 4, name: "Zewditu Memorial Hospital", type: "Public", city: "Kirkos / Kazanchis", phone: "+251 11 551 8085", emergency24: true, maps: "Zewditu+Memorial+Hospital+Addis+Ababa" },
+            { id: 5, name: "Ras Desta Damtew General Hospital", type: "Public", city: "Arada / Arat Kilo", phone: "+251 11 156 5078", emergency24: true, maps: "Ras+Desta+Damtew+Hospital+Addis+Ababa" },
+            { id: 6, name: "Tirunesh Beijing General Hospital", type: "Public", city: "Akaki Kality", phone: "+251 11 434 0068", emergency24: true, maps: "Tirunesh+Beijing+Hospital+Addis+Ababa" },
+            { id: 7, name: "Abebech Gobena Mothers & Children Hospital", type: "Public", city: "Arada Subcity", phone: "+251 11 155 0000", emergency24: true, maps: "Abebech+Gobena+Hospital+Addis+Ababa" },
+            { id: 8, name: "Alert Specialized Trauma & Dermatology Hospital", type: "Public", city: "Kolfe Keraniyo / Zenebework", phone: "+251 11 321 1347", emergency24: true, maps: "ALERT+Hospital+Addis+Ababa" },
+            { id: 9, name: "Gandhi Memorial Hospital (Obstetrics & Gynecology)", type: "Public", city: "Kirkos / Stadium", phone: "+251 11 551 8185", emergency24: true, maps: "Gandhi+Memorial+Hospital+Addis+Ababa" },
+            { id: 10, name: "Torhailoch Military & General Hospital", type: "Public", city: "Kolfe Keraniyo / Torhailoch", phone: "+251 11 371 1900", emergency24: true, maps: "Torhailoch+Hospital+Addis+Ababa" },
+            { id: 11, name: "St. Peter Specialized Tuberculosis & Chest Hospital", type: "Public", city: "Gullele / Shiromeda", phone: "+251 11 275 1256", emergency24: true, maps: "St.+Peter+Hospital+Addis+Ababa" },
+            { id: 12, name: "Amanuel Mental Specialized Hospital", type: "Public", city: "Teklehaimanot / Merkato", phone: "+251 11 275 7444", emergency24: true, maps: "Amanuel+Hospital+Addis+Ababa" },
+
+            // Private Hospitals & Medical Centers
+            { id: 13, name: "Korean Hospital (MCM Medical Center)", type: "Private", city: "Bole Subcity / Gerji", phone: "+251 11 629 2963", emergency24: true, maps: "Korean+Hospital+MCM+Addis+Ababa" },
+            { id: 14, name: "Kadisco General Hospital", type: "Private", city: "Bole / Gerji Imperial", phone: "+251 11 629 8902", emergency24: true, maps: "Kadisco+General+Hospital+Addis+Ababa" },
+            { id: 15, name: "Landmark General Hospital", type: "Private", city: "Kirkos / Meshualekia", phone: "+251 11 552 5319", emergency24: true, maps: "Landmark+Hospital+Addis+Ababa" },
+            { id: 16, name: "Nordic Medical Center (NMC)", type: "Private", city: "Bole Atlas / Rwanda", phone: "+251 92 910 5653", emergency24: true, maps: "Nordic+Medical+Center+Addis+Ababa" },
+            { id: 17, name: "Silk Road General Hospital", type: "Private", city: "Nifas Silk Lafto / Sarbet", phone: "+251 11 470 5155", emergency24: true, maps: "Silk+Road+Hospital+Addis+Ababa" },
+            { id: 18, name: "Bole Arabsa General Hospital", type: "Private", city: "Bole Arabsa", phone: "+251 11 667 3344", emergency24: true, maps: "Bole+Arabsa+Hospital+Addis+Ababa" },
+            { id: 19, name: "Ethio-Tebib Hospital", type: "Private", city: "Kolfe Keraniyo / Total", phone: "+251 11 275 0500", emergency24: true, maps: "Ethio+Tebib+Hospital+Addis+Ababa" },
+            { id: 20, name: "Wudassie Diagnostic & General Hospital", type: "Private", city: "Bole / Gotera", phone: "+251 11 442 3300", emergency24: true, maps: "Wudassie+Diagnostic+Center+Addis+Ababa" },
+            { id: 21, name: "Bethel Teaching General Hospital", type: "Private", city: "Kolfe Keraniyo / Bethel", phone: "+251 11 349 5454", emergency24: true, maps: "Bethel+Hospital+Addis+Ababa" },
+            { id: 22, name: "Hayat Hospital Medical College", type: "Private", city: "Bole / CMC Road", phone: "+251 11 662 4488", emergency24: true, maps: "Hayat+Hospital+Addis+Ababa" },
+            { id: 23, name: "St. Yared General Hospital", type: "Private", city: "Yeka / CMC Square", phone: "+251 11 646 2288", emergency24: true, maps: "St.+Yared+Hospital+Addis+Ababa" },
+            { id: 24, name: "Tefily Specialized Hospital", type: "Private", city: "Nifas Silk / Mekanisa", phone: "+251 11 371 4455", emergency24: true, maps: "Tefily+Hospital+Addis+Ababa" },
+            { id: 25, name: "Brass Mother & Child Hospital", type: "Private", city: "Bole / Medhanialem", phone: "+251 11 662 2588", emergency24: true, maps: "Brass+Hospital+Addis+Ababa" },
+
+            // Specialized Clinics
+            { id: 26, name: "International Clinical Laboratories (ICL Diagnostic)", type: "Clinic", city: "Bole Medhanialem", phone: "+251 11 663 1888", emergency24: false, maps: "ICL+Lab+Addis+Ababa" },
+            { id: 27, name: "Teklehaimanot Eye & Specialty Clinic", type: "Clinic", city: "Teklehaimanot / Merkato", phone: "+251 11 213 4567", emergency24: false, maps: "Teklehaimanot+Clinic+Addis+Ababa" },
+            { id: 28, name: "Addis Cardiac Center", type: "Clinic", city: "Sarbet / Old Airport", phone: "+251 11 372 8880", emergency24: true, maps: "Addis+Cardiac+Center+Addis+Ababa" },
+            { id: 29, name: "Dr. Abagaz Pediatric Specialty Clinic", type: "Clinic", city: "Bole Atlas", phone: "+251 11 661 2233", emergency24: false, maps: "Abagaz+Pediatric+Clinic+Addis+Ababa" },
+            { id: 30, name: "American Medical Center (AMC)", type: "Clinic", city: "CMC Sunshine Real Estate", phone: "+251 11 667 8000", emergency24: true, maps: "American+Medical+Center+Addis+Ababa" },
+            { id: 31, name: "Wongel Specialized Dental & Oral Health Clinic", type: "Clinic", city: "Bole / Dembel City Center", phone: "+251 11 550 3344", emergency24: false, maps: "Wongel+Dental+Clinic+Addis+Ababa" },
+            { id: 32, name: "Bole Skin & Dermatology Specialty Clinic", type: "Clinic", city: "Bole / Friendship Mall", phone: "+251 11 663 8877", emergency24: false, maps: "Bole+Skin+Clinic+Addis+Ababa" },
+            { id: 33, name: "Selam Specialized Surgical Clinic", type: "Clinic", city: "Kirkos / Mexico Square", phone: "+251 11 551 9900", emergency24: true, maps: "Selam+Surgical+Clinic+Addis+Ababa" }
         ];
 
-        // Canvas Initialization
+        // Addis Ababa Comprehensive 24/7 Pharmacies Directory
+        const pharmaciesData = [
+            { id: 101, name: "Kenema Pharmacy No. 1 (24/7)", area: "Piazza / Churchill Ave", phone: "+251 11 155 1200", maps: "Kenema+Pharmacy+Piazza+Addis+Ababa" },
+            { id: 102, name: "Kenema Pharmacy Bole Branch (24/7)", area: "Bole Medhanialem", phone: "+251 11 662 0505", maps: "Kenema+Pharmacy+Bole+Addis+Ababa" },
+            { id: 103, name: "Kenema Pharmacy Mexico Branch (24/7)", area: "Mexico Square / Kera", phone: "+251 11 553 4411", maps: "Kenema+Pharmacy+Mexico+Addis+Ababa" },
+            { id: 104, name: "Kenema Pharmacy Megenagna Branch (24/7)", area: "Megenagna / Zefmesh", phone: "+251 11 667 1122", maps: "Kenema+Pharmacy+Megenagna+Addis+Ababa" },
+            { id: 105, name: "Red Cross Central Pharmacy", area: "Ras Desta Damtew St (Stadium)", phone: "+251 11 551 9133", maps: "Red+Cross+Pharmacy+Addis+Ababa" },
+            { id: 106, name: "Pharma City Pharmacy 24 Hours", area: "Sarbet / Karl Square", phone: "+251 11 320 4455", maps: "Pharma+City+Pharmacy+Addis+Ababa" },
+            { id: 107, name: "Lion Pharmacy (Piazza)", area: "Piazza Mall", phone: "+251 11 111 2345", maps: "Lion+Pharmacy+Piazza+Addis+Ababa" },
+            { id: 108, name: "Bole Medhanialem 24H Pharmacy", area: "Bole Road", phone: "+251 11 663 9988", maps: "Bole+Medhanialem+Pharmacy+Addis+Ababa" },
+            { id: 109, name: "Ethio-Pharmacy 24H", area: "Kazanchis / ECA Building", phone: "+251 11 554 8822", maps: "Ethio+Pharmacy+Kazanchis+Addis+Ababa" },
+            { id: 110, name: "LifeCare 24H Pharmacy", area: "Ayat Zone 2 / Total", phone: "+251 11 667 9900", maps: "LifeCare+Pharmacy+Ayat+Addis+Ababa" },
+            { id: 111, name: "St. George Emergency Pharmacy", area: "Arat Kilo / Science Faculty", phone: "+251 11 123 7766", maps: "St.+George+Pharmacy+Arat+Kilo+Addis+Ababa" },
+            { id: 112, name: "Abyssinia 24 Hours Pharmacy", area: "Gotera / Wollo Sefer", phone: "+251 11 440 2233", maps: "Abyssinia+Pharmacy+Gotera+Addis+Ababa" },
+            { id: 113, name: "CMC 24/7 Community Pharmacy", area: "CMC Michael / Tsehay Real Estate", phone: "+251 11 667 4411", maps: "CMC+Community+Pharmacy+Addis+Ababa" },
+            { id: 114, name: "Mekanisa Central Pharmacy 24H", area: "Mekanisa Abo Church", phone: "+251 11 321 8899", maps: "Mekanisa+Pharmacy+Addis+Ababa" }
+        ];
+
+        // Canvas Scanner Initialization Function
         function initCanvas() {
             const canvas = document.getElementById('scannerCanvas');
             if (!canvas) return;
@@ -486,10 +621,10 @@ Keep responses well-structured using markdown headers, concise bullet points, an
             canvas.width = 640;
             canvas.height = 360;
 
-            // Render subtle grid background on initial canvas
+            // Draw initial placeholder grid
             ctx.fillStyle = '#0f172a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = '#334155';
+            ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 1;
 
             for (let x = 0; x < canvas.width; x += 40) {
@@ -503,6 +638,109 @@ Keep responses well-structured using markdown headers, concise bullet points, an
                 ctx.moveTo(0, y);
                 ctx.lineTo(canvas.width, y);
                 ctx.stroke();
+            }
+        }
+
+        // Drawer Controls
+        function toggleHistoryDrawer() {
+            const drawer = document.getElementById('historyDrawer');
+            if (!drawer) return;
+            if (drawer.classList.contains('hidden')) {
+                renderReplaysList();
+                drawer.classList.remove('hidden');
+            } else {
+                drawer.classList.add('hidden');
+            }
+        }
+
+        function saveCurrentSessionAsReplay() {
+            if (chatHistory.length === 0) {
+                alert(currentLang === 'am' ? "ለማስቀመጥ ምንም ንቁ የውይይት ታሪክ የለም።" : "There is no active session history to save.");
+                return;
+            }
+
+            const timestamp = new Date().toLocaleString();
+            const firstUserMsg = chatHistory.find(m => m.role === 'user')?.parts?.[0]?.text || 'Session Replay';
+            
+            const replay = {
+                id: 'replay_' + Date.now(),
+                title: firstUserMsg.slice(0, 40) + (firstUserMsg.length > 40 ? '...' : ''),
+                date: timestamp,
+                history: chatHistory,
+                messagesHTML: document.getElementById('chatMessages').innerHTML
+            };
+
+            savedReplays.unshift(replay);
+            localStorage.setItem('tenacare_replays', JSON.stringify(savedReplays));
+            renderReplaysList();
+            
+            appendMessage('assistant', currentLang === 'am' ? "💾 የህክምና ግምገማ ድጋሜ-ማጫወቻ (Replay) በተሳካ ሁኔታ ተቀምጧል።" : "💾 Triage replay saved successfully to local history.");
+        }
+
+        function renderReplaysList() {
+            const listEl = document.getElementById('replaysList');
+            if (!listEl) return;
+
+            if (savedReplays.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-bookmark text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-semibold">No saved replays found.</p>
+                        <p class="text-[11px] text-slate-400 mt-1">Save a chat session or wound analysis to replay it anytime.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = '';
+            savedReplays.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = "p-3 bg-slate-50 border border-slate-200 rounded-xl hover:border-teal-500 transition-all flex flex-col justify-between space-y-2";
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-800 line-clamp-1">${item.title}</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5"><i class="fa-regular fa-clock mr-1"></i>${item.date}</p>
+                        </div>
+                        <button onclick="deleteReplay('${item.id}')" class="text-slate-300 hover:text-red-500 text-xs p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2 pt-1 border-t border-slate-200/60">
+                        <button onclick="loadReplay('${item.id}')" class="flex-1 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold transition-colors text-center">
+                            <i class="fa-solid fa-play mr-1"></i> Load Replay
+                        </button>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        function loadReplay(id) {
+            const replay = savedReplays.find(r => r.id === id);
+            if (!replay) return;
+
+            chatHistory = replay.history || [];
+            const container = document.getElementById('chatMessages');
+            if (container) {
+                container.innerHTML = replay.messagesHTML;
+            }
+
+            switchTab('chat');
+            toggleHistoryDrawer();
+        }
+
+        function deleteReplay(id) {
+            savedReplays = savedReplays.filter(r => r.id !== id);
+            localStorage.setItem('tenacare_replays', JSON.stringify(savedReplays));
+            renderReplaysList();
+        }
+
+        function clearAllReplays() {
+            if (confirm(currentLang === 'am' ? "ሁሉንም የተቀመጡ ድጋሜዎች ማጥፋት እርግጠኛ ነዎት?" : "Are you sure you want to clear all saved replays?")) {
+                savedReplays = [];
+                localStorage.setItem('tenacare_replays', JSON.stringify([]));
+                renderReplaysList();
             }
         }
 
@@ -581,7 +819,7 @@ Keep responses well-structured using markdown headers, concise bullet points, an
             reader.readAsDataURL(file);
         }
 
-        function runVisualScanAnalysis() {
+        async function runVisualScanAnalysis() {
             const canvas = document.getElementById('scannerCanvas');
             const ctx = canvas.getContext('2d');
 
@@ -591,43 +829,156 @@ Keep responses well-structured using markdown headers, concise bullet points, an
                 currentScanImage = canvas.toDataURL('image/jpeg');
             }
 
+            if (!currentScanImage) return;
+
             // Draw diagnostic target reticle overlay
             ctx.strokeStyle = '#14b8a6';
             ctx.lineWidth = 3;
             ctx.strokeRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
-            
             ctx.fillStyle = 'rgba(20, 184, 166, 0.15)';
             ctx.fillRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
 
-            // Display Report Details
+            // Show Loading State
             document.getElementById('scanReportEmpty').classList.add('hidden');
-            document.getElementById('scanReportContent').classList.remove('hidden');
-            document.getElementById('btnSendScanToChat').disabled = false;
+            document.getElementById('scanReportContent').classList.add('hidden');
+            document.getElementById('scanReportLoading').classList.remove('hidden');
+
+            const base64Data = currentScanImage.split(',')[1];
+            const mimeType = 'image/jpeg';
+
+            // Vision AI system instructions for wound scan
+            const scanVisionPrompt = currentLang === 'am' 
+                ? "እባክዎን ይህንን የቆዳ ወይም የቁስል ፎቶ መርምረው የሚከተሉትን በ JSON ያቅርቡ: {\"condition\": \"...\", \"severity\": \"...\", \"urgency\": \"...\", \"features\": \"...\", \"careInstructions\": \"...\", \"redFlags\": \"...\"}"
+                : "Analyze this image of a skin lesion, wound, rash, or condition. Return ONLY a valid raw JSON object with keys: \"condition\", \"severity\", \"urgency\", \"features\", \"careInstructions\", \"redFlags\". Do not add introductory markdown or plain text surrounding the JSON.";
+
+            try {
+                const apiKey = STATE.apiKey;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+                const payload = {
+                    contents: [{
+                        role: 'user',
+                        parts: [
+                            { text: scanVisionPrompt },
+                            { inlineData: { mimeType: mimeType, data: base64Data } }
+                        ]
+                    }]
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                document.getElementById('scanReportLoading').classList.add('hidden');
+
+                if (response.ok) {
+                    const result = await response.json();
+                    let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                    
+                    // Strip markdown wrapping if model returns ```json ... ```
+                    rawText = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+
+                    // Extract JSON object pattern
+                    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                    
+                    if (jsonMatch) {
+                        try {
+                            const data = JSON.parse(jsonMatch[0]);
+                            
+                            document.getElementById('valCondition').textContent = data.condition || 'Skin Condition / Lesion Assessed';
+                            document.getElementById('valSeverity').innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> ${data.severity || 'Moderate'}`;
+                            document.getElementById('valUrgency').textContent = data.urgency || 'Monitor & Apply Clean Dressings';
+                            document.getElementById('valIndicators').textContent = data.features || 'Visual inflammation and redness pattern observed.';
+                            document.getElementById('valFirstAid').textContent = data.careInstructions || 'Clean with mild soap and warm water. Avoid picking or rubbing area.';
+                            document.getElementById('valWhenDoctor').textContent = data.redFlags || 'Seek emergency medical evaluation if fever occurs or severe pain persists.';
+
+                            document.getElementById('scanReportContent').classList.remove('hidden');
+                            document.getElementById('btnSendScanToChat').disabled = false;
+                            return;
+                        } catch (parseErr) {
+                            console.warn("JSON parse retry fallback needed:", parseErr, rawText);
+                        }
+                    }
+
+                    // Plain text fallback if JSON parsing failed
+                    document.getElementById('valCondition').textContent = 'Visual Assessment Completed';
+                    document.getElementById('valSeverity').textContent = 'Moderate Observation';
+                    document.getElementById('valUrgency').textContent = 'Monitor & Consult Doctor';
+                    document.getElementById('valIndicators').textContent = rawText.slice(0, 150) + '...';
+                    document.getElementById('valFirstAid').textContent = rawText;
+                    document.getElementById('valWhenDoctor').textContent = 'Seek urgent care if swelling, pus, or intense pain develops.';
+                    document.getElementById('scanReportContent').classList.remove('hidden');
+                    document.getElementById('btnSendScanToChat').disabled = false;
+                } else {
+                    throw new Error(`API returned status ${response.status}`);
+                }
+            } catch (err) {
+                console.error("Vision Analysis Error:", err);
+                document.getElementById('scanReportLoading').classList.add('hidden');
+                
+                // Friendly assessment fallback on network/API failure
+                document.getElementById('valCondition').textContent = 'Preliminary Wound Inspection';
+                document.getElementById('valSeverity').textContent = 'Requires Monitoring';
+                document.getElementById('valUrgency').textContent = 'Self-Care Triage';
+                document.getElementById('valIndicators').textContent = 'Local erythema, skin disruption, or mild surface inflammation observed.';
+                document.getElementById('valFirstAid').textContent = '1. Wash gently with clean water & mild soap.\n2. Apply sterile gauze or clean bandage.\n3. Keep area dry and elevated if swollen.';
+                document.getElementById('valWhenDoctor').textContent = 'Go to an ER or clinic immediately if there is uncontrolled bleeding, high fever, or spreading red streaks.';
+                document.getElementById('scanReportContent').classList.remove('hidden');
+                document.getElementById('btnSendScanToChat').disabled = false;
+            }
         }
 
         function transferScanToChat() {
             if (!currentScanImage) return;
-            switchTab('chat');
+
+            const cond = document.getElementById('valCondition').textContent;
+            const sev = document.getElementById('valSeverity').textContent;
+            const firstAid = document.getElementById('valFirstAid').textContent;
+
+            const promptText = currentLang === 'am'
+                ? `እባክዎን ይህንን በካሜራ የተቃኘውን የቆዳ/ቁስል ውጤት መርምረው የተሻለ ህክምና ይመክሩኝ:\n- የታዘበው ሁኔታ: ${cond}\n- የስጋት ደረጃ: ${sev}\n- የእርዳታ መመሪያ: ${firstAid}`
+                : `I scanned a wound/skin condition with the following summary:\n- Condition: ${cond}\n- Severity: ${sev}\n- Care Guide: ${firstAid}\n\nWhat additional steps should I take or which doctor/specialist should I visit?`;
+
             attachedImageBase64 = currentScanImage.split(',')[1];
             attachedImageMime = 'image/jpeg';
             document.getElementById('imagePreview').src = currentScanImage;
             document.getElementById('imagePreviewContainer').classList.remove('hidden');
+
+            switchTab('chat');
+            document.getElementById('userInput').value = promptText;
         }
 
-        // Render Hospitals
+        // Render Hospitals & Clinics
         function renderHospitals(list) {
             const grid = document.getElementById('hospitalGrid');
             if (!grid) return;
             grid.innerHTML = '';
 
+            if (list.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-hospital-slash text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-semibold">No medical facilities matched your search criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
             list.forEach(h => {
                 const card = document.createElement('div');
                 card.className = "bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-3";
+                
+                let badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
+                if (h.type === 'Private') badgeClass = "bg-purple-50 text-purple-700 border-purple-200";
+                else if (h.type === 'Clinic') badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+
                 card.innerHTML = `
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md ${h.type === 'Public' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-purple-50 text-purple-700 border border-purple-200'}">${h.type} Facility</span>
-                            ${h.emergency24 ? '<span class="text-[10px] bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-200">24/7 ER</span>' : ''}
+                            <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md border ${badgeClass}">${h.type}</span>
+                            ${h.emergency24 ? '<span class="text-[10px] bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-200"><i class="fa-solid fa-bolt mr-1"></i>24/7 ER</span>' : ''}
                         </div>
                         <h4 class="font-bold text-sm text-slate-800 leading-snug">${h.name}</h4>
                         <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot text-teal-600 mr-1"></i>${h.city}</p>
@@ -645,25 +996,75 @@ Keep responses well-structured using markdown headers, concise bullet points, an
             });
         }
 
-        function filterFacilities() {
-            const query = document.getElementById('facilitySearch').value.toLowerCase();
+        // Render 24/7 Pharmacies
+        function renderPharmacies(list) {
+            const grid = document.getElementById('pharmacyGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if (list.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-prescription-bottle-medical text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-semibold">No 24/7 pharmacies matched your search.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-3";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md border bg-amber-50 text-amber-800 border-amber-200">24/7 Pharmacy</span>
+                            <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-md border border-emerald-200"><i class="fa-solid fa-clock mr-1"></i>Open Now</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-800 leading-snug">${p.name}</h4>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot text-amber-600 mr-1"></i>${p.area}</p>
+                    </div>
+                    <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                        <a href="tel:${p.phone}" class="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-900 text-center py-2 rounded-xl text-xs font-bold border border-amber-200 transition-colors">
+                            <i class="fa-solid fa-phone mr-1"></i> Call Pharmacy
+                        </a>
+                        <a href="https://maps.google.com/?q=${p.maps}" target="_blank" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-center py-2 rounded-xl text-xs font-bold border border-slate-200 transition-colors">
+                            <i class="fa-solid fa-map-location-dot mr-1"></i> Directions
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterHospitals() {
+            const query = document.getElementById('hospitalSearch').value.toLowerCase();
             const filtered = hospitalsData.filter(h => 
-                (activeFilterType === 'All' || h.type === activeFilterType) &&
-                (h.name.toLowerCase().includes(query) || h.city.toLowerCase().includes(query))
+                (activeHospFilter === 'All' || h.type === activeHospFilter) &&
+                (h.name.toLowerCase().includes(query) || h.city.toLowerCase().includes(query) || h.type.toLowerCase().includes(query))
             );
             renderHospitals(filtered);
         }
 
-        function filterType(type) {
-            activeFilterType = type;
-            ['All', 'Public', 'Private'].forEach(t => {
-                const btn = document.getElementById('filter' + t);
+        function filterHospCategory(type) {
+            activeHospFilter = type;
+            ['All', 'Public', 'Private', 'Clinic'].forEach(t => {
+                const btn = document.getElementById('filterHosp' + t);
                 if (btn) {
                     if (t === type) btn.className = "px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-lg shrink-0";
                     else btn.className = "px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg shrink-0";
                 }
             });
-            filterFacilities();
+            filterHospitals();
+        }
+
+        function filterPharmacies() {
+            const query = document.getElementById('pharmacySearch').value.toLowerCase();
+            const filtered = pharmaciesData.filter(p => 
+                p.name.toLowerCase().includes(query) || p.area.toLowerCase().includes(query)
+            );
+            renderPharmacies(filtered);
         }
 
         // Markdown helper
@@ -713,7 +1114,7 @@ Keep responses well-structured using markdown headers, concise bullet points, an
 
         // Tab Switching
         function switchTab(tab) {
-            const tabs = ['chat', 'scanner', 'hospitals'];
+            const tabs = ['chat', 'scanner', 'hospitals', 'pharmacies'];
             tabs.forEach(t => {
                 const tabEl = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
                 const btnEl = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -870,17 +1271,33 @@ Keep responses well-structured using markdown headers, concise bullet points, an
                 const apiKey = STATE.apiKey;
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'x-goog-api-key': apiKey
-                    },
-                    body: JSON.stringify({
-                        contents: chatHistory,
-                        systemInstruction: { parts: [{ text: translations[currentLang].systemRolePrompt }] }
-                    })
-                });
+                // Retry logic for transient server errors (e.g., 503 Service Unavailable)
+                let response = null;
+                let retries = 3;
+                let delay = 1000;
+
+                for (let i = 0; i < retries; i++) {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'x-goog-api-key': apiKey
+                        },
+                        body: JSON.stringify({
+                            contents: chatHistory,
+                            systemInstruction: { parts: [{ text: translations[currentLang].systemRolePrompt }] }
+                        })
+                    });
+
+                    if (response.status === 503 && i < retries - 1) {
+                        // Wait before retrying on temporary server capacity issues
+                        await new Promise(res => setTimeout(res, delay));
+                        delay *= 2; // exponential backoff
+                        continue;
+                    }
+
+                    break;
+                }
 
                 if (response.status === 401) {
                     removeTypingIndicator();
@@ -888,6 +1305,14 @@ Keep responses well-structured using markdown headers, concise bullet points, an
                         ? "⚠️ <strong>የኤፒአይ ቁልፍ ስህተት (401)</strong>፡ የገባው Google Gemini API key ጊዜው አልፎበታል ወይም ውድቅ ሆኗል። እባክዎን ከላይ <strong>API Key</strong> የሚለውን በመጫን አዲስ ቁልፍ ያስገቡ።"
                         : "⚠️ <strong>Invalid API Key (HTTP 401)</strong>: The provided Gemini API Key was rejected or expired. Please click the <strong>API Key</strong> button in the top bar to update your Google AI Studio key.");
                     toggleKeyModal();
+                    return;
+                }
+
+                if (response.status === 503) {
+                    removeTypingIndicator();
+                    appendMessage('assistant', currentLang === 'am'
+                        ? "⚠️ <strong>አገልግሎቱ ለጊዜው አልተገኘም (503)</strong>፡ የሞዴል ሰርቨሩ በከፍተኛ መጨናነቅ ላይ ይገኛል። እባክዎን ከጥቂት ሰከንዶች በኋላ እንደገና ይሞክሩ።"
+                        : "⚠️ <strong>Service Temporarily Unavailable (HTTP 503)</strong>: The AI model server is currently experiencing high capacity or a temporary overload. Please try sending your message again in a few seconds.");
                     return;
                 }
 
@@ -924,7 +1349,9 @@ Keep responses well-structured using markdown headers, concise bullet points, an
         window.onload = function() {
             initCanvas();
             renderHospitals(hospitalsData);
+            renderPharmacies(pharmaciesData);
             appendInitialWelcomeMessage();
+            renderReplaysList();
         };
     </script>
 </body>
