@@ -96,6 +96,12 @@
                     <span>907 Emergency</span>
                 </a>
 
+                <!-- Google Account Auth Button -->
+                <button id="btnGoogleAuth" onclick="handleGoogleSignIn()" class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 transition-all">
+                    <i class="fa-brands fa-google text-red-500"></i>
+                    <span id="authBtnText" class="hidden md:inline">Sign In with Google</span>
+                </button>
+
                 <!-- API Key Config Button -->
                 <button onclick="toggleKeyModal()" class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 transition-all">
                     <i class="fa-solid fa-key text-teal-600"></i>
@@ -161,6 +167,12 @@
                     <button onclick="toggleHistoryDrawer()" class="text-slate-400 hover:text-slate-600 p-1">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
+                </div>
+
+                <!-- Account Status Banner inside Drawer -->
+                <div id="drawerAccountBanner" class="px-4 py-2 bg-slate-100 border-b border-slate-200 flex items-center justify-between text-xs">
+                    <span id="drawerSyncStatus" class="text-slate-600 font-medium">Synced with Local Storage</span>
+                    <span id="drawerUserEmail" class="text-[11px] font-bold text-teal-700 truncate max-w-[180px]">Guest</span>
                 </div>
 
                 <!-- Replays Saved Sessions List -->
@@ -520,6 +532,117 @@
 
     </main>
 
+    <!-- Firebase SDK Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration setup
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "AIzaSyDummyConfigForEnvironmentFallback",
+                authDomain: "tenacare-ai.firebaseapp.com",
+                projectId: "tenacare-ai",
+                storageBucket: "tenacare-ai.appspot.com",
+                messagingSenderId: "1234567890",
+                appId: "1:1234567890:web:1234567890"
+            };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'tenacare-ai-app';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUser = null;
+
+        // Make Firebase Auth functions available to global window context
+        window.handleGoogleSignIn = async function() {
+            if (currentUser) {
+                if (confirm(window.currentLang === 'am' ? "ከመለያዎ መውጣት ይፈልጋሉ?" : "Do you want to sign out of your Google account?")) {
+                    await signOut(auth);
+                }
+            } else {
+                try {
+                    await signInWithPopup(auth, provider);
+                } catch (err) {
+                    console.error("Google Sign-In Error:", err);
+                    alert("Google Sign-In failed or was closed. Please try again.");
+                }
+            }
+        };
+
+        // Auth Listener for User Sync
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            const authBtnText = document.getElementById('authBtnText');
+            const drawerSyncStatus = document.getElementById('drawerSyncStatus');
+            const drawerUserEmail = document.getElementById('drawerUserEmail');
+
+            if (user) {
+                if (authBtnText) authBtnText.textContent = user.displayName || user.email.split('@')[0];
+                if (drawerSyncStatus) drawerSyncStatus.textContent = "☁️ Cloud Synced";
+                if (drawerUserEmail) drawerUserEmail.textContent = user.email;
+
+                // Sync cloud history to application view
+                await window.loadCloudReplays();
+            } else {
+                if (authBtnText) authBtnText.textContent = "Sign In with Google";
+                if (drawerSyncStatus) drawerSyncStatus.textContent = "Local Storage Only";
+                if (drawerUserEmail) drawerUserEmail.textContent = "Guest";
+                window.renderReplaysList();
+            }
+        });
+
+        // Cloud Storage sync functions exposed globally
+        window.saveReplayToCloud = async function(replayData) {
+            if (!currentUser) return false;
+            try {
+                // Rule 1 Strict Path: /artifacts/{appId}/users/{userId}/replays
+                const userReplaysRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'replays');
+                await addDoc(userReplaysRef, replayData);
+                return true;
+            } catch (err) {
+                console.error("Error saving replay to cloud:", err);
+                return false;
+            }
+        };
+
+        window.loadCloudReplays = async function() {
+            if (!currentUser) return;
+            try {
+                const userReplaysRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'replays');
+                const snapshot = await getDocs(userReplaysRef);
+                const cloudItems = [];
+                snapshot.forEach(docSnap => {
+                    cloudItems.push({ cloudId: docSnap.id, ...docSnap.data() });
+                });
+                
+                if (cloudItems.length > 0) {
+                    window.savedReplays = cloudItems;
+                    localStorage.setItem('tenacare_replays', JSON.stringify(cloudItems));
+                    window.renderReplaysList();
+                }
+            } catch (err) {
+                console.error("Error loading cloud replays:", err);
+            }
+        };
+
+        window.deleteCloudReplay = async function(cloudId) {
+            if (!currentUser || !cloudId) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'replays', cloudId);
+                await deleteDoc(docRef);
+            } catch (err) {
+                console.error("Error deleting cloud replay:", err);
+            }
+        };
+
+        window.getCurrentUserId = () => currentUser?.uid || null;
+    </script>
+
     <!-- JavaScript Application Core Logic -->
     <script>
         // Configuration & State Management
@@ -653,7 +776,7 @@
             }
         }
 
-        function saveCurrentSessionAsReplay() {
+        async function saveCurrentSessionAsReplay() {
             if (chatHistory.length === 0) {
                 alert(currentLang === 'am' ? "ለማስቀመጥ ምንም ንቁ የውይይት ታሪክ የለም።" : "There is no active session history to save.");
                 return;
@@ -672,9 +795,15 @@
 
             savedReplays.unshift(replay);
             localStorage.setItem('tenacare_replays', JSON.stringify(savedReplays));
+            
+            // Sync to Firebase Cloud Firestore if user is signed in
+            if (window.saveReplayToCloud) {
+                await window.saveReplayToCloud(replay);
+            }
+
             renderReplaysList();
             
-            appendMessage('assistant', currentLang === 'am' ? "💾 የህክምና ግምገማ ድጋሜ-ማጫወቻ (Replay) በተሳካ ሁኔታ ተቀምጧል።" : "💾 Triage replay saved successfully to local history.");
+            appendMessage('assistant', currentLang === 'am' ? "💾 የህክምና ግምገማ ድጋሜ-ማጫወቻ (Replay) በደመና መለያዎ ላይ ተቀምጧል።" : "💾 Triage replay saved successfully to your Google account.");
         }
 
         function renderReplaysList() {
@@ -686,7 +815,7 @@
                     <div class="text-center py-12 text-slate-400">
                         <i class="fa-solid fa-bookmark text-3xl mb-2 text-slate-300"></i>
                         <p class="text-xs font-semibold">No saved replays found.</p>
-                        <p class="text-[11px] text-slate-400 mt-1">Save a chat session or wound analysis to replay it anytime.</p>
+                        <p class="text-[11px] text-slate-400 mt-1">Sign in with Google to sync your triage history across all your devices.</p>
                     </div>
                 `;
                 return;
@@ -702,7 +831,7 @@
                             <h4 class="text-xs font-bold text-slate-800 line-clamp-1">${item.title}</h4>
                             <p class="text-[10px] text-slate-400 mt-0.5"><i class="fa-regular fa-clock mr-1"></i>${item.date}</p>
                         </div>
-                        <button onclick="deleteReplay('${item.id}')" class="text-slate-300 hover:text-red-500 text-xs p-1">
+                        <button onclick="deleteReplay('${item.id}', '${item.cloudId || ''}')" class="text-slate-300 hover:text-red-500 text-xs p-1">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -730,9 +859,14 @@
             toggleHistoryDrawer();
         }
 
-        function deleteReplay(id) {
+        async function deleteReplay(id, cloudId) {
             savedReplays = savedReplays.filter(r => r.id !== id);
             localStorage.setItem('tenacare_replays', JSON.stringify(savedReplays));
+            
+            if (cloudId && window.deleteCloudReplay) {
+                await window.deleteCloudReplay(cloudId);
+            }
+
             renderReplaysList();
         }
 
