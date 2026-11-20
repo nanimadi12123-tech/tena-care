@@ -524,33 +524,100 @@
         // Interactive chat history array for Gemini API context
         let chatHistory = [];
 
-        // Multi-API Key Rotation Engine
-        const API_KEYS = [
-            "AQ.Ab8RN6K-sDjCCLvJGqLyc7ayWodEtCDgZ6qZiGRy7CX_BrXV6w",
-            "AQ.Ab8RN6JwRv9fCh492jB7QNFdibuC4yln2eEkQK9k7IWcFAcnvw",
-            "AQ.Ab8RN6Je03YrQaZGIudgjfit9txw1mzaY3cjUN7Xw-MalrYsjw"
-        ];
-        let currentApiKeyIndex = 0;
+        // Dedicated API Keys: Free Trial vs Paid Access
+        const TRIAL_API_KEY = "AQ.Ab8RN6JM2XA8sEBzv5453fsruHn8aTki_lHYpcZUPQJSWghvJA";
+        const PAID_API_KEY = "AQ.Ab8RN6LwtIKY3I1KMPxODaX-GAZ7mvKUb0ZwdKpdqxeqcDksiw";
 
-        function getActiveApiKey() {
-            return API_KEYS[currentApiKeyIndex];
+        function getDailyTrialInfo() {
+            const now = Date.now();
+            const stored = JSON.parse(localStorage.getItem('tena_daily_trial') || 'null');
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+
+            if (!stored || (now - stored.resetTimestamp) >= twentyFourHours) {
+                const fresh = { queriesLeft: 3, resetTimestamp: now };
+                localStorage.setItem('tena_daily_trial', JSON.stringify(fresh));
+                return fresh;
+            }
+            return stored;
         }
 
-        function rotateApiKey() {
-            currentApiKeyIndex = (currentApiKeyIndex + 1) % API_KEYS.length;
-            console.log(`Rotated to Gemini API key index ${currentApiKeyIndex}`);
+        function decrementTrialQuery() {
+            const info = getDailyTrialInfo();
+            if (info.queriesLeft > 0) {
+                info.queriesLeft--;
+                localStorage.setItem('tena_daily_trial', JSON.stringify(info));
+            }
+            return info.queriesLeft;
+        }
+
+        function getActiveSubscription() {
+            const payments = JSON.parse(localStorage.getItem('tena_pending_payments') || '[]');
+            const now = Date.now();
+            // Find the most recent approved payment that hasn't expired
+            const active = payments.slice().reverse().find(p => p.status === 'Approved' && p.expiryTimestamp && p.expiryTimestamp > now);
+            return active || null;
+        }
+
+        function getActiveApiKey() {
+            const activeSub = getActiveSubscription();
+            if (activeSub) {
+                return activeSub.assignedApiKey || PAID_API_KEY;
+            }
+            return TRIAL_API_KEY;
         }
 
         const STATE = {
             lang: 'en',
             theme: 'light',
             isGenerating: false,
-            trialQueriesLeft: 3,
-            isSubscribed: false,
+            trialQueriesLeft: getDailyTrialInfo().queriesLeft,
+            isSubscribed: !!getActiveSubscription(),
             subscriptionPlan: null,
             selectedPlanCost: 50,
             pendingPayments: JSON.parse(localStorage.getItem('tena_pending_payments') || '[]')
         };
+
+        function syncSubscriptionState(notifyOnNewApproval = false) {
+            const payments = JSON.parse(localStorage.getItem('tena_pending_payments') || '[]');
+            STATE.pendingPayments = payments;
+            const activeSub = getActiveSubscription();
+            const statusText = document.getElementById('subStatusText');
+            const statusBtn = document.getElementById('subStatusBtn');
+
+            if (activeSub) {
+                STATE.isSubscribed = true;
+                if (statusText) {
+                    statusText.textContent = `Paid Approved (Active until ${activeSub.expiryReadable})`;
+                }
+                if (statusBtn) {
+                    statusBtn.className = "flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-200 transition-all";
+                }
+
+                // Automatically notify user once when admin approves payment
+                if (notifyOnNewApproval && !activeSub.notifiedUser) {
+                    activeSub.notifiedUser = true;
+                    localStorage.setItem('tena_pending_payments', JSON.stringify(payments));
+                    appendMessage('assistant', `🎉 <strong>Paid Approved!</strong>\nHello <strong>${activeSub.senderName}</strong>, your payment of <strong>${activeSub.amount} ETB</strong> has been verified and approved!\nYour account is now unlocked with unlimited messaging until <strong>${activeSub.expiryReadable}</strong>.\nActivation Code: <code class="text-sm font-black text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">${activeSub.activationCode}</code>`);
+                }
+            } else {
+                STATE.isSubscribed = false;
+                const trialInfo = getDailyTrialInfo();
+                STATE.trialQueriesLeft = trialInfo.queriesLeft;
+                if (statusText) {
+                    statusText.textContent = `Free Trial (${STATE.trialQueriesLeft}/3 Left Today)`;
+                }
+                if (statusBtn) {
+                    statusBtn.className = "flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-200 transition-all";
+                }
+            }
+        }
+
+        // Listen for real-time approval updates from admin.html
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'tena_pending_payments') {
+                syncSubscriptionState(true);
+            }
+        });
 
         // Payment Flow Logic
         function togglePaymentModal() {
@@ -635,7 +702,7 @@
             localStorage.setItem('tena_pending_payments', JSON.stringify(STATE.pendingPayments));
             togglePaymentModal();
             document.getElementById('transferForm').reset();
-            appendMessage('assistant', `✅ <strong>Account Registration & Payment Submitted!</strong>\nName: <strong>${transferObj.senderName}</strong>\nPhone: <code>${transferObj.senderPhone}</code>\nTelebirr Ref: <code>${transferObj.txnRef}</code>\nStatus: <strong>Pending Admin Approval</strong>. Once approved, your 6-digit access code will be issued to activate your account.`);
+            appendMessage('assistant', `✅ <strong>Account Registration & Payment Submitted!</strong>\nName: <strong>${transferObj.senderName}</strong>\nPhone: <code>${transferObj.senderPhone}</code>\nTelebirr Ref: <code>${transferObj.txnRef}</code>\nStatus: <strong>Pending Admin Approval</strong>. Once approved, you will automatically receive a "Paid Approved" confirmation and full access for your paid duration.`);
         }
 
         function renderAdminPendingList() {
@@ -942,17 +1009,6 @@ Keep responses well-structured using markdown headers, concise bullet points, an
                     body: JSON.stringify(payload)
                 });
 
-                if (response.status === 429 || response.status === 401) {
-                    rotateApiKey();
-                    const retryKey = getActiveApiKey();
-                    const retryUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${encodeURIComponent(retryKey)}`;
-                    response = await fetch(retryUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                }
-
                 document.getElementById('scanReportLoading').classList.add('hidden');
 
                 if (response.ok) {
@@ -1247,10 +1303,12 @@ Keep responses well-structured using markdown headers, concise bullet points, an
 
             if (!userText && !attachedImageBase64) return;
 
-            // Check trial usage
+            syncSubscriptionState(false);
+
+            // Check trial usage or active paid subscription
             if (!STATE.isSubscribed && STATE.trialQueriesLeft <= 0) {
                 togglePaymentModal();
-                appendMessage('assistant', "⚠️ <strong>Free Trial Limit Reached!</strong><br>Please select a subscription plan and complete your Telebirr/CBE transfer to receive instant approval.");
+                appendMessage('assistant', "⚠️ <strong>Daily Free Trial Limit Reached (3/3 Used)!</strong><br>Your 3 free daily messages will reset in 24 hours, or you can select a paid plan now and send via Telebirr (<strong>0982310337</strong>) for immediate approval.");
                 return;
             }
 
@@ -1268,9 +1326,8 @@ Keep responses well-structured using markdown headers, concise bullet points, an
             }
 
             if (!STATE.isSubscribed) {
-                STATE.trialQueriesLeft--;
-                const subText = document.getElementById('subStatusText');
-                if (subText) subText.textContent = `Free Trial (${STATE.trialQueriesLeft} Left)`;
+                STATE.trialQueriesLeft = decrementTrialQuery();
+                syncSubscriptionState(false);
             }
 
             inputEl.value = '';
@@ -1301,24 +1358,6 @@ Keep responses well-structured using markdown headers, concise bullet points, an
                         systemInstruction: { parts: [{ text: translations[currentLang].systemRolePrompt }] }
                     })
                 });
-
-                // Auto Key Rotation on 429 / 401
-                if (response.status === 401 || response.status === 429) {
-                    rotateApiKey();
-                    apiKey = getActiveApiKey();
-                    apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${encodeURIComponent(apiKey)}`;
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'x-goog-api-key': apiKey
-                        },
-                        body: JSON.stringify({
-                            contents: chatHistory,
-                            systemInstruction: { parts: [{ text: translations[currentLang].systemRolePrompt }] }
-                        })
-                    });
-                }
 
                 if (!response.ok) throw new Error(`API response status ${response.status}`);
 
@@ -1354,6 +1393,9 @@ Keep responses well-structured using markdown headers, concise bullet points, an
             initCanvas();
             renderHospitals(hospitalsData);
             appendInitialWelcomeMessage();
+            syncSubscriptionState(true);
+            // Periodically check if admin approved payment or if paid subscription expired
+            setInterval(() => syncSubscriptionState(true), 3000);
         };
     </script>
 </body>
